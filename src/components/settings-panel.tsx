@@ -1,5 +1,6 @@
 'use client';
 
+import { useTheme } from 'next-themes';
 import {
   SheetContent,
   SheetHeader,
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Monitor, Sun, Moon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface SettingsPanelProps {
@@ -23,6 +24,8 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ clearChat }: SettingsPanelProps) {
+  const { setTheme, theme } = useTheme();
+
   return (
     <SheetContent>
       <SheetHeader>
@@ -30,6 +33,35 @@ export function SettingsPanel({ clearChat }: SettingsPanelProps) {
         <SheetDescription>Adjust your chatbot preferences.</SheetDescription>
       </SheetHeader>
       <div className="py-4 space-y-6">
+        <div className="space-y-2">
+          <Label>Theme</Label>
+          <Select value={theme} onValueChange={setTheme}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a theme" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">
+                <div className="flex items-center gap-2">
+                  <Sun className="size-4" />
+                  <span>Light</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="dark">
+                <div className="flex items-center gap-2">
+                  <Moon className="size-4" />
+                  <span>Dark</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="system">
+                <div className="flex items-center gap-2">
+                  <Monitor className="size-4" />
+                  <span>System</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Separator />
         <div className="space-y-2">
           <Label htmlFor="ai-model">AI Model</Label>
           <Select defaultValue="gemini-2.0-flash" disabled>
