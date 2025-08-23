@@ -1,7 +1,8 @@
 'use client';
 
-import { Download, Settings } from 'lucide-react';
+import { Download, LogOut, Settings } from 'lucide-react';
 import { useChat } from '@/hooks/use-chat';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 import { ChatMessages } from '@/components/chat-messages';
@@ -16,6 +17,7 @@ import {
 
 export default function ChatLayout() {
   const { messages, isLoading, addMessage, clearChat } = useChat();
+  const { signOut, user } = useAuth();
 
   const handleExport = () => {
     const data = JSON.stringify(messages, null, 2);
@@ -53,6 +55,24 @@ export default function ChatLayout() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={signOut}
+                >
+                  <LogOut className="size-5" />
+                  <span className="sr-only">Sign Out</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sign Out</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

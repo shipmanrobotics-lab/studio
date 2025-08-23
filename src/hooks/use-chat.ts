@@ -4,20 +4,28 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Message, Conversation } from '@/lib/types';
 import { getInitialMessage, getChatbotResponse } from '@/lib/actions';
-
-const STORAGE_KEY = 'chat_history_chrisrobot';
+import { useAuth } from './use-auth';
 
 export function useChat() {
   const [messages, setMessages] = useState<Conversation>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   const initialized = useRef(false);
+  
+  const getStorageKey = useCallback(() => {
+    if (!user) return null;
+    return `chat_history_chrisrobot_${user.uid}`;
+  }, [user]);
 
   useEffect(() => {
-    if (!initialized.current) {
+    if (!initialized.current && user) {
       initialized.current = true;
+      const storageKey = getStorageKey();
+      if (!storageKey) return;
+      
       try {
-        const storedHistory = localStorage.getItem(STORAGE_KEY);
+        const storedHistory = localStorage.getItem(storageKey);
         if (storedHistory) {
           setMessages(JSON.parse(storedHistory));
         } else {
@@ -37,16 +45,17 @@ export function useChat() {
         }
       } catch (error) {
         console.error('Failed to parse chat history from localStorage', error);
-        localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
+        localStorage.removeItem(storageKey); // Clear corrupted data
       }
     }
-  }, []);
+  }, [user, getStorageKey]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    const storageKey = getStorageKey();
+    if (messages.length > 0 && storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(messages));
     }
-  }, [messages]);
+  }, [messages, getStorageKey]);
 
   const addMessage = useCallback(
     async (content: string) => {
@@ -86,8 +95,11 @@ export function useChat() {
   );
 
   const clearChat = useCallback(() => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+    
     setIsLoading(true);
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(storageKey);
     setMessages([]);
     getInitialMessage()
       .then((welcomeMessage) => {
@@ -105,7 +117,7 @@ export function useChat() {
       title: 'Chat Cleared',
       description: 'The conversation history has been cleared.',
     });
-  }, [toast]);
+  }, [toast, getStorageKey]);
 
   return { messages, isLoading, addMessage, clearChat };
 }
