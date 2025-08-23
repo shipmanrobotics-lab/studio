@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Message, Conversation } from '@/lib/types';
 import { getInitialMessage, getChatbotResponse } from '@/lib/actions';
 
-const STORAGE_KEY = 'chat_history_chattyface';
+const STORAGE_KEY = 'chat_history_chrisrobot';
 
 export function useChat() {
   const [messages, setMessages] = useState<Conversation>([]);

@@ -23,7 +23,7 @@ export default function ChatLayout() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `chattyface-history-${new Date().toISOString()}.json`;
+    a.download = `chrisrobot-history-${new Date().toISOString()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -49,7 +49,7 @@ export default function ChatLayout() {
             <line x1="12" x2="12" y1="19" y2="22"></line>
           </svg>
           <h1 className="text-xl font-bold text-foreground font-headline">
-            ChattyFace
+            ChrisRobot
           </h1>
         </div>
         <div className="flex items-center gap-2">
