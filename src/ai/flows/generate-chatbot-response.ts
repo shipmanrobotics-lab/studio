@@ -17,6 +17,7 @@ const GenerateChatbotResponseInputSchema = z.object({
     role: z.enum(['user', 'bot']),
     content: z.string(),
   })).optional().describe('The conversation history to provide context for the response.'),
+  persona: z.string().optional().describe('The persona or system instructions for the chatbot.'),
 });
 
 export type GenerateChatbotResponseInput = z.infer<typeof GenerateChatbotResponseInputSchema>;
@@ -35,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'generateChatbotResponsePrompt',
   input: {schema: GenerateChatbotResponseInputSchema},
   output: {schema: GenerateChatbotResponseOutputSchema},
-  prompt: `You are a helpful chatbot. Generate a response to the user input based on the conversation history.
+  prompt: `{% if persona %}{{persona}}{% else %}You are a helpful chatbot.{% endif %} Generate a response to the user input based on the conversation history.
 
 {% if conversationHistory %}
 Conversation History:

@@ -9,23 +9,31 @@ import { useAuth } from './use-auth';
 export function useChat() {
   const [messages, setMessages] = useState<Conversation>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [persona, setPersonaState] = useState('');
   const { toast } = useToast();
   const { user } = useAuth();
   const initialized = useRef(false);
-  
-  const getStorageKey = useCallback(() => {
+
+  const getStorageKey = useCallback((type: 'history' | 'persona') => {
     if (!user) return null;
-    return `chat_history_chrisrobot_${user.uid}`;
+    return `chat_${type}_chrisrobot_${user.uid}`;
   }, [user]);
 
   useEffect(() => {
     if (!initialized.current && user) {
       initialized.current = true;
-      const storageKey = getStorageKey();
-      if (!storageKey) return;
-      
+      const historyKey = getStorageKey('history');
+      const personaKey = getStorageKey('persona');
+      if (!historyKey || !personaKey) return;
+
       try {
-        const storedHistory = localStorage.getItem(storageKey);
+        const storedHistory = localStorage.getItem(historyKey);
+        const storedPersona = localStorage.getItem(personaKey);
+        
+        if (storedPersona) {
+          setPersonaState(storedPersona);
+        }
+
         if (storedHistory) {
           setMessages(JSON.parse(storedHistory));
         } else {
@@ -45,17 +53,28 @@ export function useChat() {
         }
       } catch (error) {
         console.error('Failed to parse chat history from localStorage', error);
-        localStorage.removeItem(storageKey); // Clear corrupted data
+        localStorage.removeItem(historyKey); // Clear corrupted data
       }
     }
   }, [user, getStorageKey]);
 
   useEffect(() => {
-    const storageKey = getStorageKey();
-    if (messages.length > 0 && storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(messages));
+    const historyKey = getStorageKey('history');
+    if (messages.length > 0 && historyKey) {
+      localStorage.setItem(historyKey, JSON.stringify(messages));
     }
   }, [messages, getStorageKey]);
+
+  const setPersona = useCallback((newPersona: string) => {
+    const personaKey = getStorageKey('persona');
+    if (!personaKey) return;
+    setPersonaState(newPersona);
+    localStorage.setItem(personaKey, newPersona);
+    toast({
+      title: 'Persona Saved',
+      description: 'Your chatbot persona has been updated.',
+    });
+  }, [getStorageKey, toast]);
 
   const addMessage = useCallback(
     async (content: string) => {
@@ -75,6 +94,7 @@ export function useChat() {
         const botResponseContent = await getChatbotResponse({
           userInput: content,
           conversationHistory: conversationHistory.slice(0, -1),
+          persona,
         });
         const botMessage: Message = { id: crypto.randomUUID(), role: 'bot', content: botResponseContent };
         setMessages((prev) => [...prev, botMessage]);
@@ -91,15 +111,15 @@ export function useChat() {
         setIsLoading(false);
       }
     },
-    [messages, toast, isLoading]
+    [messages, toast, isLoading, persona]
   );
 
   const clearChat = useCallback(() => {
-    const storageKey = getStorageKey();
-    if (!storageKey) return;
+    const historyKey = getStorageKey('history');
+    if (!historyKey) return;
     
     setIsLoading(true);
-    localStorage.removeItem(storageKey);
+    localStorage.removeItem(historyKey);
     setMessages([]);
     getInitialMessage()
       .then((welcomeMessage) => {
@@ -119,5 +139,5 @@ export function useChat() {
     });
   }, [toast, getStorageKey]);
 
-  return { messages, isLoading, addMessage, clearChat };
+  return { messages, isLoading, addMessage, clearChat, persona, setPersona };
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
   SheetContent,
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -16,15 +18,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trash2, Monitor, Sun, Moon } from 'lucide-react';
+import { Trash2, Monitor, Sun, Moon, Save } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface SettingsPanelProps {
   clearChat: () => void;
+  persona: string;
+  setPersona: (persona: string) => void;
 }
 
-export function SettingsPanel({ clearChat }: SettingsPanelProps) {
+export function SettingsPanel({
+  clearChat,
+  persona,
+  setPersona,
+}: SettingsPanelProps) {
   const { setTheme, theme } = useTheme();
+  const [currentPersona, setCurrentPersona] = useState(persona);
+
+  useEffect(() => {
+    setCurrentPersona(persona);
+  }, [persona]);
+
+  const handleSavePersona = () => {
+    setPersona(currentPersona);
+  };
 
   return (
     <SheetContent>
@@ -60,6 +77,27 @@ export function SettingsPanel({ clearChat }: SettingsPanelProps) {
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <Separator />
+        <div className="space-y-2">
+          <Label htmlFor="persona">Chatbot Persona</Label>
+          <Textarea
+            id="persona"
+            placeholder="e.g., You are a witty assistant who loves puns."
+            value={currentPersona}
+            onChange={(e) => setCurrentPersona(e.target.value)}
+            className="h-24"
+          />
+          <Button
+            className="w-full justify-start gap-2"
+            onClick={handleSavePersona}
+          >
+            <Save className="size-4" />
+            Save Persona
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Provide system instructions for the AI.
+          </p>
         </div>
         <Separator />
         <div className="space-y-2">

@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/tooltip';
 
 export default function ChatLayout() {
-  const { messages, isLoading, addMessage, clearChat } = useChat();
+  const { messages, isLoading, addMessage, clearChat, persona, setPersona } =
+    useChat();
   const { signOut, user } = useAuth();
 
   const handleExport = () => {
@@ -108,7 +109,11 @@ export default function ChatLayout() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <SettingsPanel clearChat={clearChat} />
+            <SettingsPanel
+              clearChat={clearChat}
+              persona={persona}
+              setPersona={setPersona}
+            />
           </Sheet>
         </div>
       </header>
